@@ -1,7 +1,15 @@
 import Hero from "@/components/Hero";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { featuresData, howItWorksData, statsData } from "@/data/landing";
+import {
+  featuresData,
+  howItWorksData,
+  statsData,
+  testimonialsData,
+} from "@/data/landing";
 import { Label } from "@radix-ui/react-dropdown-menu";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -64,6 +72,60 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      <section className="py-20 bg-blue-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-16">
+            What Our Users Say?
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonialsData.map((testimonial, index) => {
+              return (
+                <Card key={index} className="p-6">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center mb-4">
+                      <Image
+                        src={testimonial.image}
+                        alt={testimonial.name}
+                        height={40}
+                        width={40}
+                        className="rounded-full"
+                      />
+                      <div className="ml-4">
+                        <div className="font-semibold">{testimonial.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {testimonial.role}
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-600">{testimonial.quote}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-blue-600 text-center p-20">
+        <div className="space-y-4 text-white">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Ready to Take Control of Your Finances?
+          </h1>
+          <p className="text-sm">
+            Join thousand of users who are already managing their finances
+            smarter with Welth
+          </p>
+          <p>
+            <Link href="/dashboard">
+              <Button className="bg-white hover:bg-white/95 text-blue-500 animate-bounce">
+                Start Free Trial
+              </Button>
+            </Link>
+          </p>
         </div>
       </section>
     </div>

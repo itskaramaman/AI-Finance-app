@@ -37,7 +37,7 @@ const Hero = () => {
         </p>
 
         <Link href="/dashboard">
-          <Button size="lg" className="px-8">
+          <Button variant="bgBlue" size="lg" className="px-8">
             Get Started
           </Button>
         </Link>

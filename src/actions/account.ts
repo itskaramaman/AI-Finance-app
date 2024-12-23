@@ -73,12 +73,20 @@ export async function getAccountDetailsById(accountId: string) {
 
     const account = await db.account.findUnique({
       where: { id: accountId, userId: user.id },
-      include: { transactions: true },
+      include: {
+        transactions: { orderBy: { createdAt: "desc" } },
+        _count: { select: { transactions: true } },
+      },
     });
+    if (!account) throw new Error("Account not found");
 
     const serializedAccount = serializeObject(account);
-    return serializedAccount;
+    const serializedTransactions = account.transactions.map((transaction) =>
+      serializeObject(transaction)
+    );
+    return { account: serializedAccount, transactions: serializedTransactions };
   } catch (error) {
-    throw new Error(error.message);
+    console.log(error);
+    return null;
   }
 }

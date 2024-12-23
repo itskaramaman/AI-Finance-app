@@ -8,7 +8,7 @@ const DashboardPage = async () => {
   const accounts = await getUserAccounts();
 
   return (
-    <div className="px-5">
+    <div>
       {/* Budget Progress */}
 
       {/* Dashboard Overview */}

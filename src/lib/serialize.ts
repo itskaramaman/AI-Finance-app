@@ -6,7 +6,7 @@ const serializeObject = (obj) => {
   }
 
   if (obj.amount) {
-    serialized.balance = obj.balance.toNumber();
+    serialized.amount = obj.amount.toNumber();
   }
 
   return serialized;

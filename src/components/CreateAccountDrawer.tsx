@@ -20,32 +20,57 @@ import {
 
 import { AccountTypeEnum } from "@/lib/type";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { accountFormSchema, AccountFormType } from "@/lib/schema";
 import { Input } from "./ui/input";
-import { Checkbox } from "./ui/checkbox";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
+import useFetch from "@/hooks/useFetch";
+import { createAccount } from "@/actions/dashboard";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const {
     register,
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<AccountFormType>({
     resolver: zodResolver(accountFormSchema),
   });
 
-  const handleFormSubmit: SubmitHandler<AccountFormType> = (data) => {
-    console.log(data);
+  const { loading, error, data, fn: fnCreateAccount } = useFetch(createAccount);
+
+  const handleFormSubmit: SubmitHandler<AccountFormType> = async (formData) => {
+    await fnCreateAccount(formData);
   };
 
+  useEffect(() => {
+    if (!loading && data) {
+      toast.success("Account Created Successfully");
+      reset();
+      setOpen(false);
+    }
+  }, [data, loading]);
+
+  useEffect(() => {
+    if (error) toast.error("Failed to create account");
+  }, [error]);
+
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        reset();
+      }}
+    >
       <DrawerTrigger asChild>{children}</DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
@@ -54,7 +79,8 @@ const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
         <div className="p-5">
           <form className="space-y-4" onSubmit={handleSubmit(handleFormSubmit)}>
             <div>
-              <Input placeholder="Name" {...register("name")} />
+              <Label>Account Name</Label>
+              <Input placeholder="Main Checking" {...register("name")} />
               {errors.name && (
                 <span className="text-sm text-red-500">
                   {errors.name.message}
@@ -62,9 +88,12 @@ const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
               )}
             </div>
             <div>
+              <Label>Balance</Label>
               <Input
                 type="number"
-                placeholder="Balance"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
                 {...register("balance")}
               />
               {errors.balance && (
@@ -74,6 +103,7 @@ const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
               )}
             </div>
             <div>
+              <Label>Account Type</Label>
               <Controller
                 control={control}
                 name="type"
@@ -111,9 +141,16 @@ const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
                 control={control}
                 name="isDefault"
                 render={({ field }) => (
-                  <div className="flex items-center gap-4">
-                    <Label>Default Account</Label>
-                    <Checkbox
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Default Account</Label>
+                      <p className="text-sm text-muted-foreground">
+                        This account will be the default account for
+                        transactions.
+                      </p>
+                    </div>
+
+                    <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -126,9 +163,21 @@ const CreateAccountDrawer = ({ children }: { children: React.ReactNode }) => {
                 </span>
               )}
             </div>
-            <Button className="w-full" variant="bgBlue">
-              Create
-            </Button>
+            <div className="grid grid-cols-2 gap-2 items-center">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button className="" variant="bgBlue" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create"
+                )}
+              </Button>
+            </div>
           </form>
         </div>
       </DrawerContent>

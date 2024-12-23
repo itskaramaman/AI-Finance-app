@@ -4,14 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { AccountTypeEnum } from "@/lib/type";
 import { revalidatePath } from "next/cache";
-
-const serializeTransaction = (obj) => {
-  const serialized = { ...obj };
-
-  if (obj.balance) {
-    serialized.balance = obj.balance.toNumber();
-  }
-};
+import serializeObject from "@/lib/serialize";
 
 type CreateAccountDataType = {
   name: string;
@@ -58,11 +51,13 @@ export async function createAccount(accountData: CreateAccountDataType) {
       },
     });
 
-    const serializedAccount = serializeTransaction(account);
+    console.log(account);
+    const serializedAccount = serializeObject(account);
 
     revalidatePath("/dashboard");
+    console.log(serializedAccount);
     return { success: true, data: serializedAccount };
   } catch (error) {
-    console.error(error);
+    throw new Error(error.message);
   }
 }

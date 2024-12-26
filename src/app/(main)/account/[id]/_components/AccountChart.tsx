@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -19,50 +19,81 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts";
+
+type ChartDurationType =
+  | "all time"
+  | "last 6 month"
+  | "last 3 month"
+  | "last month"
+  | "last week";
 
 const AccountChart = ({
   transactions,
 }: {
   transactions: TransactionType[];
 }) => {
-  const [chartDuration, setChartDuration] = useState<
-    "last month" | "last three months" | "last week"
-  >("last month");
-  let transactionCharts = transactions.map((transaction) => ({
-    amount: transaction.amount,
-    createdAt: transaction.createdAt,
-    date: format(transaction.createdAt, "PP").split(",")[0],
-    type: transaction.type,
-    fillColor:
-      transaction.type === TransactionTypeEnum.EXPENSE ? "#FF0000" : "#008000",
-  }));
+  const [chartDuration, setChartDuration] =
+    useState<ChartDurationType>("last month");
 
-  transactionCharts = transactionCharts.sort(
-    (a, b) => a.createdAt - b.createdAt
-  );
+  const filteredData = useMemo(() => {
+    let transactionCharts = transactions.map((transaction) => ({
+      [transaction.type === TransactionTypeEnum.EXPENSE ? "expense" : "income"]:
+        transaction.amount,
+      createdAt: transaction.createdAt,
+      date: format(transaction.createdAt, "PP").split(",")[0],
+      type: transaction.type,
+      fillColor:
+        transaction.type === TransactionTypeEnum.EXPENSE
+          ? "#FF0000"
+          : "#008000",
+    }));
 
-  if (chartDuration === "last week") {
-    transactionCharts = transactionCharts.slice(transactionCharts.length - 7);
-  } else if (chartDuration === "last three months") {
-    transactionCharts = transactionCharts.slice(transactionCharts.length - 90);
-  } else {
-    transactionCharts = transactionCharts.slice(transactionCharts.length - 30);
-  }
+    transactionCharts = transactionCharts.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
-  let totalIncome = 0;
-  let totalExpense = 0;
+    switch (chartDuration) {
+      case "last week":
+        transactionCharts = transactionCharts.slice(
+          transactionCharts.length - 7
+        );
+        break;
+      case "last month":
+        transactionCharts = transactionCharts.slice(
+          transactionCharts.length - 30
+        );
+        break;
+      case "last 3 month":
+        transactionCharts = transactionCharts.slice(
+          transactionCharts.length - 90
+        );
+        break;
+      case "last 6 month":
+        transactionCharts = transactionCharts.slice(
+          transactionCharts.length - 180
+        );
+        break;
 
-  transactionCharts.forEach((transaction) => {
-    if (transaction.type === TransactionTypeEnum.EXPENSE) {
-      totalExpense = totalExpense + transaction.amount;
-    } else {
-      totalIncome = totalIncome + transaction.amount;
+      default:
+        break;
     }
-  });
-  const net = totalIncome - totalExpense;
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactionCharts.forEach((transaction) => {
+      if (transaction.type === TransactionTypeEnum.EXPENSE) {
+        totalExpense = totalExpense + transaction.amount;
+      } else {
+        totalIncome = totalIncome + transaction.amount;
+      }
+    });
+    const net = totalIncome - totalExpense;
+
+    return { transactionCharts, totalExpense, totalIncome, net };
+  }, [transactions, chartDuration]);
 
   return (
     <div className="w-full h-[30rem] border rounded-lg shadow-md p-5">
@@ -72,14 +103,16 @@ const AccountChart = ({
         </div>
 
         <div>
-          <Select onValueChange={(val) => setChartDuration(val)}>
+          <Select defaultValue={chartDuration} onValueChange={setChartDuration}>
             <SelectTrigger value="light" className="w-[180px]">
               <SelectValue placeholder="Last Month" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="last month">Last Month</SelectItem>
-              <SelectItem value="last three months">Last 3 Month</SelectItem>
               <SelectItem value="last week">Last Week</SelectItem>
+              <SelectItem value="last month">Last Month</SelectItem>
+              <SelectItem value="last 3 month">Last 3 Month</SelectItem>
+              <SelectItem value="last 6 month">Last 6 Month</SelectItem>
+              <SelectItem value="all time">All Time</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -89,33 +122,34 @@ const AccountChart = ({
         <div className="text-center">
           <span className="block text-gray-600">Total Income</span>
           <span className="block text-green-500">
-            ${totalIncome.toFixed(2)}
+            ${filteredData.totalIncome.toFixed(2)}
           </span>
         </div>
         <div className="text-center">
           <span className="block text-gray-600">Total Expense</span>
-          <span className="block text-red-500">${totalExpense.toFixed(2)}</span>
+          <span className="block text-red-500">
+            ${filteredData.totalExpense.toFixed(2)}
+          </span>
         </div>
         <div className="text-center">
           <span className="block text-gray-600">Net</span>
           <span
-            className={`block ${net >= 0 ? "text-green-500" : "text-red-500"}`}
+            className={`block ${
+              filteredData.net >= 0 ? "text-green-500" : "text-red-500"
+            }`}
           >
-            ${net.toFixed(2)}
+            ${filteredData.net.toFixed(2)}
           </span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height="80%">
-        <BarChart data={transactionCharts}>
+        <BarChart data={filteredData.transactionCharts}>
           <CartesianGrid strokeDasharray="3" />
           <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="amount">
-            {transactionCharts.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fillColor} />
-            ))}
-          </Bar>
+          <Bar dataKey="income" name="Income" fill="#22c55e" />
+          <Bar dataKey="expense" name="Expense" fill="#ef4444" />
         </BarChart>
       </ResponsiveContainer>
     </div>

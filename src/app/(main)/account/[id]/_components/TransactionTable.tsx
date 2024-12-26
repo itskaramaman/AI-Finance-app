@@ -4,6 +4,7 @@ import {
   TransactionTypeEnum,
   RecurringIntervalEnum,
   TransactionStatusEnum,
+  TransactionType,
 } from "@/lib/type";
 
 import {
@@ -60,26 +61,6 @@ import useFetch from "@/hooks/useFetch";
 import { bulkDeleteTransactions } from "@/actions/transaction";
 import { toast } from "sonner";
 
-type TransactionTableProps = {
-  id: string;
-  type: TransactionTypeEnum;
-  amount: number;
-  description: string;
-  date: Date;
-  category: string;
-  receiptUrl: string | null;
-  isRecurring: boolean;
-  recurringInterval: RecurringIntervalEnum | null;
-  nextRecurringDate: Date | null;
-  lastProcessed: Date | null;
-  status: TransactionStatusEnum;
-  userId: string;
-  accountId: string;
-  createdAt: Date;
-  updatedAt: Date;
-  balance: number;
-};
-
 type SortConfig = {
   field: "date" | "category" | "amount";
   direction: "asc" | "desc";
@@ -90,9 +71,9 @@ const TRANSACTIONS_PER_PAGE = 10;
 const TransactionTable = ({
   transactions,
 }: {
-  transactions: TransactionTableProps[];
+  transactions: TransactionType[];
 }) => {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: "date",
     direction: "desc",

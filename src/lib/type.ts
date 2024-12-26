@@ -20,3 +20,23 @@ export enum TransactionStatusEnum {
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
 }
+
+export type TransactionType = {
+  id: string;
+  type: TransactionTypeEnum;
+  amount: number;
+  description: string;
+  date: Date;
+  category: string;
+  receiptUrl: string | null;
+  isRecurring: boolean;
+  recurringInterval: RecurringIntervalEnum | null;
+  nextRecurringDate: Date | null;
+  lastProcessed: Date | null;
+  status: TransactionStatusEnum;
+  userId: string;
+  accountId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  balance: number;
+};

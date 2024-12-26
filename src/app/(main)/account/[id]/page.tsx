@@ -10,7 +10,6 @@ const AccountPage = async ({ params }: { params: Promise<{ id: string }> }) => {
   const accountDetails = await getAccountDetailsById(id);
   if (!accountDetails) notFound();
   const { account, transactions } = accountDetails;
-  console.log(accountDetails);
 
   return (
     <div className="space-y-8">

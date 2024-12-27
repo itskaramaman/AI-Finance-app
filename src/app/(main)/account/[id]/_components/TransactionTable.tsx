@@ -139,7 +139,6 @@ const TransactionTable = ({
     data: deleteData,
     fn: fnBulkDeleteTransactions,
   } = useFetch(bulkDeleteTransactions);
-  const router = useRouter();
 
   const handleSort = (field: SortConfig["field"]) => {
     setSortConfig((current) => ({

@@ -14,7 +14,6 @@ import React, { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -44,6 +43,7 @@ const AccountChart = ({
       createdAt: transaction.createdAt,
       date: format(transaction.createdAt, "PP").split(",")[0],
       type: transaction.type,
+      amount: transaction.amount,
       fillColor:
         transaction.type === TransactionTypeEnum.EXPENSE
           ? "#FF0000"

@@ -3,13 +3,27 @@ import { Card } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { getUserAccounts } from "@/actions/account";
 import AccountCard from "./_components/AccountCard";
+import { getCurrentBudget } from "@/actions/budget";
+import BudgetProgress from "./_components/BudgetProgress";
 
 const DashboardPage = async () => {
   const accounts = await getUserAccounts();
+  const defaultAccount = accounts?.find((account) => account.isDefault);
+
+  let budgetData = null;
+  if (defaultAccount) {
+    budgetData = await getCurrentBudget(defaultAccount.id);
+  }
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* Budget Progress */}
+      {budgetData && (
+        <BudgetProgress
+          budget={budgetData.budget}
+          currentExpenses={budgetData.currentExpenses}
+        />
+      )}
 
       {/* Dashboard Overview */}
 

@@ -29,8 +29,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { addTransactionFormSchema, AddTransactionFormType } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { TransactionTypeEnum, RecurringIntervalEnum } from "@/lib/type";
@@ -43,11 +42,18 @@ import { defaultCategories } from "@/data/categories";
 import { createTransaction } from "@/actions/transaction";
 import useFetch from "@/hooks/useFetch";
 import { toast } from "sonner";
-import { err } from "inngest/types";
 import { useRouter } from "next/navigation";
+import ReceiptScanner from "./ReceiptScanner";
+
+type ScannedDataType = {
+  amount: number;
+  category: string;
+  date: Date | string;
+  description?: string;
+  merchantName: string;
+};
 
 const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [showRecurringIntervals, setShowRecurringIntervals] = useState(false);
   const {
     register,
@@ -55,6 +61,7 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
     control,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<AddTransactionFormType>({
     resolver: zodResolver(addTransactionFormSchema),
   });
@@ -89,21 +96,26 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
     }
   }, [error]);
 
+  const handleScanComplete = (scannedData: ScannedDataType) => {
+    console.log(scannedData);
+    if (scannedData) {
+      setValue("amount", scannedData.amount);
+      setValue("date", new Date(scannedData.date));
+      if (scannedData.description) {
+        setValue("description", scannedData.description);
+      }
+      if (scannedData.category) {
+        setValue("category", scannedData.category);
+      }
+    }
+  };
+
   return (
     <form
       className="w-full space-y-4"
       onSubmit={handleSubmit(handleFormSubmit)}
     >
-      <div
-        className="gradient rounded-md h-10 flex items-center justify-center cursor-pointer"
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <div className="flex gap-2 text-white items-center">
-          <Camera />
-          <p>Scan Receipt with AI</p>
-        </div>
-        <Input type="file" ref={fileInputRef} className="hidden" />
-      </div>
+      <ReceiptScanner onScanComplete={handleScanComplete} />
 
       <div className="space-y-2">
         <Label>Type</Label>

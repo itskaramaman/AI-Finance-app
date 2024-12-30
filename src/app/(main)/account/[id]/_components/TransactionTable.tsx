@@ -104,7 +104,7 @@ const TransactionTable = ({
 
       switch (sortConfig.field) {
         case "date":
-          comparison = new Date(a.createdAt) - new Date(b.createdAt);
+          comparison = new Date(a.date) - new Date(b.date);
           break;
         case "amount":
           comparison = a.amount - b.amount;
@@ -319,7 +319,7 @@ const TransactionTable = ({
                       checked={selectedIds.includes(transaction.id)}
                     />
                   </TableCell>
-                  <TableCell>{format(transaction.createdAt, "PP")}</TableCell>
+                  <TableCell>{format(transaction.date, "PP")}</TableCell>
                   <TableCell>{transaction.description}</TableCell>
                   <TableCell>
                     <p className={`capitalize`}>{transaction.category}</p>

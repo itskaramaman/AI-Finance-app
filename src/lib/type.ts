@@ -1,3 +1,5 @@
+import { TransactionTypeEnum } from "@/lib/type";
+import { boolean, number } from "zod";
 export enum AccountTypeEnum {
   SAVINGS = "SAVINGS",
   CURRENT = "CURRENT",
@@ -21,22 +23,45 @@ export enum TransactionStatusEnum {
   FAILED = "FAILED",
 }
 
-export type TransactionType = {
+export type TransactionTypeBase = {
   id: string;
   type: TransactionTypeEnum;
   amount: number;
   description: string;
   date: Date;
   category: string;
-  receiptUrl: string | null;
+  receiptUrl?: string;
   isRecurring: boolean;
-  recurringInterval: RecurringIntervalEnum | null;
-  nextRecurringDate: Date | null;
-  lastProcessed: Date | null;
   status: TransactionStatusEnum;
   userId: string;
   accountId: string;
   createdAt: Date;
   updatedAt: Date;
   balance: number;
+};
+
+export type TransactionType = TransactionTypeBase &
+  (TransactionTypeBase["isRecurring"] extends true
+    ? {
+        recurringInterval: RecurringIntervalEnum;
+        nextRecurringDate: Date | string;
+        lastProcessed: Date;
+      }
+    : null);
+
+export type CreateTransactionType = Omit<
+  TransactionType,
+  "id" | "userId" | "nextRecurringDate" | "lastProcessed" | "status"
+>;
+
+export type AccountType = {
+  id: string;
+  name: string;
+  type: TransactionTypeEnum;
+  balance: number;
+  isDefault: boolean;
+  userId: string;
+  transactions: TransactionType[];
+  createdAt: Date;
+  updatedAt: Date;
 };

@@ -7,7 +7,7 @@ export async function checkUser() {
   try {
     const clerkUser = await currentUser();
 
-    if (!clerkUser) throw new Error("Unauthorized");
+    if (!clerkUser) return;
 
     const user = await db.user.findUnique({
       where: { clerkUserId: clerkUser.id },

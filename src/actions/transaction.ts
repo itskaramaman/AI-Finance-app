@@ -1,8 +1,14 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { TransactionTypeEnum } from "@/lib/type";
+import serializeObject from "@/lib/serialize";
+import {
+  TransactionTypeEnum,
+  CreateTransactionType,
+  RecurringIntervalEnum,
+} from "@/lib/type";
 import { auth } from "@clerk/nextjs/server";
+import { addDays, addMonths, addWeeks, addYears } from "date-fns";
 import { revalidatePath } from "next/cache";
 
 export async function bulkDeleteTransactions(ids: string[]) {
@@ -48,4 +54,93 @@ export async function bulkDeleteTransactions(ids: string[]) {
     console.error(error);
     return { success: "false" };
   }
+}
+
+export async function createTransaction({
+  type,
+  amount,
+  description,
+  date,
+  category,
+  receiptUrl,
+  isRecurring,
+  recurringInterval,
+  accountId,
+}: CreateTransactionType) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+    if (!user) throw new Error("User not found");
+
+    const account = await db.account.findUnique({
+      where: { id: accountId, userId: user.id },
+    });
+
+    if (!account) throw new Error("Account Not Found");
+
+    const balanceChange =
+      type === TransactionTypeEnum.EXPENSE ? -amount : amount;
+    const newbalance = account.balance.toNumber() + balanceChange;
+
+    const prismaTransaction = await db.$transaction(async (tx) => {
+      const newTransaction = await tx.transaction.create({
+        data: {
+          userId: user.id,
+          date,
+          amount,
+          accountId,
+          description,
+          type,
+          category,
+          isRecurring,
+          receiptUrl,
+          nextRecurringDate:
+            isRecurring && recurringInterval
+              ? calculateNextRecurringDate(date, recurringInterval)
+              : null,
+        },
+      });
+
+      await tx.account.update({
+        where: { id: accountId, userId: user.id },
+        data: { balance: newbalance },
+      });
+
+      return newTransaction;
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath(`/account/${accountId}`);
+
+    return { success: true, data: serializeObject(prismaTransaction) };
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
+function calculateNextRecurringDate(
+  startDate: Date,
+  interval: RecurringIntervalEnum
+) {
+  const date = new Date(startDate);
+  switch (interval) {
+    case RecurringIntervalEnum.DAILY:
+      date.setDate(date.getDate() + 1);
+      break;
+    case RecurringIntervalEnum.WEEKLY:
+      date.setDate(date.getDate() + 7);
+      break;
+    case RecurringIntervalEnum.MONTHLY:
+      date.setDate(date.getMonth() + 1);
+      break;
+    case RecurringIntervalEnum.YEARLY:
+      date.setDate(date.getFullYear() + 1);
+      break;
+    default:
+      break;
+  }
+
+  return date;
 }

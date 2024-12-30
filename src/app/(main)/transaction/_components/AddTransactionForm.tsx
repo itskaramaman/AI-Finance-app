@@ -9,9 +9,7 @@ import {
 
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -32,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { addTransactionFormSchema, AddTransactionFormType } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { TransactionTypeEnum, RecurringIntervalEnum } from "@/lib/type";
@@ -42,6 +40,11 @@ import CreateAccountDrawer from "@/components/CreateAccountDrawer";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { defaultCategories } from "@/data/categories";
+import { createTransaction } from "@/actions/transaction";
+import useFetch from "@/hooks/useFetch";
+import { toast } from "sonner";
+import { err } from "inngest/types";
+import { useRouter } from "next/navigation";
 
 const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -56,11 +59,35 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
     resolver: zodResolver(addTransactionFormSchema),
   });
 
-  const handleFormSubmit: SubmitHandler<AddTransactionFormType> = (data) => {
-    console.log(data);
+  const router = useRouter();
+
+  const {
+    loading,
+    error,
+    data,
+    fn: fnCreateTransaction,
+  } = useFetch(createTransaction);
+
+  const handleFormSubmit: SubmitHandler<AddTransactionFormType> = async (
+    data
+  ) => {
+    await fnCreateTransaction({ ...data, accountId: data.account });
+    reset();
   };
 
-  console.log(errors);
+  useEffect(() => {
+    if (data && !loading && data.success) {
+      toast.success("Transcation Created Successfully");
+      reset();
+      router.push(`/account/${data.data.accountId}`);
+    }
+  }, [data, loading]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error("Transcation Failed");
+    }
+  }, [error]);
 
   return (
     <form
@@ -236,7 +263,10 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
 
       <div className="space-y-2">
         <Label>Description</Label>
-        <Textarea placeholder="Transaction Description" />
+        <Textarea
+          {...register("description")}
+          placeholder="Transaction Description"
+        />
       </div>
 
       <div className="space-y-2">
@@ -246,10 +276,19 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
             <CardDescription>
               <div className="flex justify-between items-center">
                 <p>Set up a recurring schedule for this transaction</p>
-                <Switch
-                  onCheckedChange={(checked) =>
-                    setShowRecurringIntervals(checked)
-                  }
+                <Controller
+                  control={control}
+                  name="isRecurring"
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        setShowRecurringIntervals(checked);
+                      }}
+                    />
+                  )}
                 />
               </div>
               {showRecurringIntervals && (
@@ -257,9 +296,11 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
                   <Controller
                     control={control}
                     name="recurringInterval"
+                    defaultValue={RecurringIntervalEnum.WEEKLY}
                     render={({ field }) => (
                       <Select
                         value={field.value}
+                        defaultValue={RecurringIntervalEnum.WEEKLY}
                         onValueChange={(value) => field.onChange(value)}
                       >
                         <SelectTrigger className="w-full">
@@ -290,7 +331,7 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-2 items-center">
-        <Button variant="outline" onClick={() => reset()}>
+        <Button variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
         <Button type="submit">Create Transaction</Button>

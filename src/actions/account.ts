@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import serializeObject from "@/lib/serialize";
+import { TransactionType } from "@/lib/type";
 
 export async function getUserAccounts() {
   try {
@@ -81,8 +82,8 @@ export async function getAccountDetailsById(accountId: string) {
     if (!account) throw new Error("Account not found");
 
     const serializedAccount = serializeObject(account);
-    const serializedTransactions = account.transactions.map((transaction) =>
-      serializeObject(transaction)
+    const serializedTransactions: TransactionType[] = account.transactions.map(
+      (transaction) => serializeObject(transaction)
     );
     return { account: serializedAccount, transactions: serializedTransactions };
   } catch (error) {

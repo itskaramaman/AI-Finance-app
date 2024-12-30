@@ -21,22 +21,8 @@ export const addTransactionFormSchema = z.object({
   category: z.string().min(1, "Account is required"),
   date: z.date(),
   description: z.string().optional(),
-  recurringTransaction: z.boolean().optional().default(false),
-  recurringInterval: z
-    .nativeEnum(RecurringIntervalEnum)
-    .optional()
-    .superRefine((val, ctx) => {
-      const parent = ctx.parent;
-
-      if (parent.recurringTransaction && !val) {
-        ctx.addIssue({
-          path: ["recurringInterval"],
-          message:
-            "Recurring interval is required when using recurring transactions",
-          code: z.ZodIssueCode.custom,
-        });
-      }
-    }),
+  isRecurring: z.boolean().optional().default(false),
+  recurringInterval: z.nativeEnum(RecurringIntervalEnum).optional(),
 });
 
 export type AddTransactionFormType = z.infer<typeof addTransactionFormSchema>;

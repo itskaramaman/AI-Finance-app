@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  TransactionTypeEnum,
-  RecurringIntervalEnum,
-  TransactionStatusEnum,
-  TransactionType,
-} from "@/lib/type";
+import { TransactionTypeEnum, TransactionType } from "@/lib/type";
 
 import {
   Tooltip,
@@ -73,7 +68,7 @@ const TransactionTable = ({
 }: {
   transactions: TransactionType[];
 }) => {
-  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: "date",
     direction: "desc",
@@ -83,7 +78,7 @@ const TransactionTable = ({
   const [recurringFilter, setRecurringFilter] = useState("");
   const [pageNum, setPageNum] = useState(1);
 
-  const filteredAndSortedTransactions = useMemo(() => {
+  const filteredAndSortedTransactions: TransactionType[] = useMemo(() => {
     let result = [...transactions];
 
     if (searchTerm) {

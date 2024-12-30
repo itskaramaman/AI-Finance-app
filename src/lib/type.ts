@@ -23,7 +23,7 @@ export enum TransactionStatusEnum {
   FAILED = "FAILED",
 }
 
-export type TransactionTypeBase = {
+export type TransactionType = {
   id: string;
   type: TransactionTypeEnum;
   amount: number;
@@ -32,6 +32,9 @@ export type TransactionTypeBase = {
   category: string;
   receiptUrl?: string;
   isRecurring: boolean;
+  recurringInterval: RecurringIntervalEnum;
+  nextRecurringDate: Date | string;
+  lastProcessed: Date;
   status: TransactionStatusEnum;
   userId: string;
   accountId: string;
@@ -39,15 +42,6 @@ export type TransactionTypeBase = {
   updatedAt: Date;
   balance: number;
 };
-
-export type TransactionType = TransactionTypeBase &
-  (TransactionTypeBase["isRecurring"] extends true
-    ? {
-        recurringInterval: RecurringIntervalEnum;
-        nextRecurringDate: Date | string;
-        lastProcessed: Date;
-      }
-    : null);
 
 export type CreateTransactionType = Omit<
   TransactionType,

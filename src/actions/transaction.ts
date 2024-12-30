@@ -8,8 +8,9 @@ import {
   RecurringIntervalEnum,
 } from "@/lib/type";
 import { auth } from "@clerk/nextjs/server";
-import { addDays, addMonths, addWeeks, addYears } from "date-fns";
 import { revalidatePath } from "next/cache";
+import { request } from "@arcjet/next";
+import aj from "@/lib/arcjet";
 
 export async function bulkDeleteTransactions(ids: string[]) {
   try {
@@ -71,6 +72,20 @@ export async function createTransaction({
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    const req = await request();
+    const decision = await aj.protect(req, {
+      userId,
+      requested: 1,
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        throw new Error("Too many requests. Please try again later.");
+      }
+
+      throw new Error("Request Blocked");
+    }
+
     const user = await db.user.findUnique({ where: { clerkUserId: userId } });
     if (!user) throw new Error("User not found");
 
@@ -96,6 +111,7 @@ export async function createTransaction({
           category,
           isRecurring,
           receiptUrl,
+          recurringInterval,
           nextRecurringDate:
             isRecurring && recurringInterval
               ? calculateNextRecurringDate(date, recurringInterval)

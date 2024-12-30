@@ -26,8 +26,11 @@ export async function getUserAccounts() {
       serializeObject(account)
     );
     return serializedAccounts;
-  } catch (error) {
-    throw new Error(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("An unknown error occured while getUserAccounts");
   }
 }
 
@@ -56,8 +59,11 @@ export async function updateDefaultAccount(accountId: string) {
     revalidatePath("/dashboard");
 
     return { success: true, data: serializedAccount };
-  } catch (error) {
-    throw new Error(error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("An unknown error occured while updateDefaultAccount");
   }
 }
 

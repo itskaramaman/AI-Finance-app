@@ -9,7 +9,7 @@ import {
 } from "@/lib/type";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
-import { categories, request } from "@arcjet/next";
+import { request } from "@arcjet/next";
 import aj from "@/lib/arcjet";
 import genAI from "@/lib/gemini";
 
@@ -132,8 +132,11 @@ export async function createTransaction({
     revalidatePath(`/account/${accountId}`);
 
     return { success: true, data: serializeObject(prismaTransaction) };
-  } catch (error) {
-    throw new Error(error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("An unknown error occured while createTransaction");
   }
 }
 
@@ -211,8 +214,10 @@ export async function scanReceipt(file: File) {
       console.error("Error parsing JSON response: ", error);
       throw new Error("Invalid response format from Gemini");
     }
-  } catch (error) {
-    console.error("Error scanning receipt", error.message);
-    throw new Error("Failed to scan the receipt");
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("An unknown error occured while scanReceipt");
   }
 }

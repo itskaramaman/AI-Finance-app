@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,14 +32,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
-import { TransactionTypeEnum, RecurringIntervalEnum } from "@/lib/type";
+import {
+  TransactionTypeEnum,
+  RecurringIntervalEnum,
+  TransactionType,
+} from "@/lib/type";
 import { SelectValue } from "@radix-ui/react-select";
 import { AccountType } from "@/lib/type";
 import CreateAccountDrawer from "@/components/CreateAccountDrawer";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { defaultCategories } from "@/data/categories";
-import { createTransaction } from "@/actions/transaction";
+import { createTransaction, updateTransaction } from "@/actions/transaction";
 import useFetch from "@/hooks/useFetch";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -53,7 +57,15 @@ type ScannedDataType = {
   merchantName: string;
 };
 
-const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
+const AddTransactionForm = ({
+  accounts,
+  transaction,
+  editTransactionId,
+}: {
+  accounts: AccountType[];
+  transaction?: TransactionType;
+  editTransactionId?: string;
+}) => {
   const [showRecurringIntervals, setShowRecurringIntervals] = useState(false);
   const {
     register,
@@ -64,6 +76,16 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
     setValue,
   } = useForm<AddTransactionFormType>({
     resolver: zodResolver(addTransactionFormSchema),
+    defaultValues: {
+      type: transaction?.type,
+      date: transaction?.date,
+      amount: transaction?.amount,
+      accountId: transaction?.accountId,
+      isRecurring: transaction?.isRecurring,
+      category: transaction?.category,
+      recurringInterval: transaction?.recurringInterval,
+      description: transaction?.description,
+    },
   });
 
   const router = useRouter();
@@ -75,10 +97,22 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
     fn: fnCreateTransaction,
   } = useFetch(createTransaction);
 
+  const {
+    loading: updateTransactionLoading,
+    error: updateTransactionError,
+    data: updateTransactionData,
+    fn: fnUpdateTransaction,
+  } = useFetch(updateTransaction);
+
   const handleFormSubmit: SubmitHandler<AddTransactionFormType> = async (
     data
   ) => {
-    await fnCreateTransaction({ ...data, accountId: data.account });
+    if (editTransactionId) {
+      await fnUpdateTransaction(editTransactionId, data);
+    } else {
+      await fnCreateTransaction(data);
+    }
+
     reset();
   };
 
@@ -91,13 +125,24 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
   }, [data, loading]);
 
   useEffect(() => {
+    if (
+      updateTransactionData &&
+      !updateTransactionLoading &&
+      updateTransactionData.success
+    ) {
+      toast.success("Transcation Updated Successfully");
+      reset();
+      router.push(`/account/${updateTransactionData.data.accountId}`);
+    }
+  }, [updateTransactionData, updateTransactionLoading]);
+
+  useEffect(() => {
     if (error) {
       toast.error("Transcation Failed");
     }
   }, [error]);
 
   const handleScanComplete = (scannedData: ScannedDataType) => {
-    console.log(scannedData);
     if (scannedData) {
       setValue("amount", scannedData.amount);
       setValue("date", new Date(scannedData.date));
@@ -168,7 +213,7 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
           <Label>Account</Label>
           <Controller
             defaultValue={accounts.filter((account) => account.isDefault)[0].id}
-            name="account"
+            name="accountId"
             control={control}
             render={({ field }) => (
               <Select
@@ -294,6 +339,7 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
                   defaultValue={false}
                   render={({ field }) => (
                     <Switch
+                      defaultChecked={false}
                       checked={field.value}
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
@@ -346,7 +392,25 @@ const AddTransactionForm = ({ accounts }: { accounts: AccountType[] }) => {
         <Button variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit">Create Transaction</Button>
+        <Button type="submit">
+          {!editTransactionId ? (
+            loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                <span>Creating...</span>
+              </>
+            ) : (
+              "Create Transaction"
+            )
+          ) : updateTransactionLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              <span>Updating...</span>
+            </>
+          ) : (
+            "Update Transaction"
+          )}
+        </Button>
       </div>
     </form>
   );

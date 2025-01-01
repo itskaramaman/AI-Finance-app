@@ -1,5 +1,3 @@
-import { TransactionTypeEnum } from "@/lib/type";
-import { boolean, number } from "zod";
 export enum AccountTypeEnum {
   SAVINGS = "SAVINGS",
   CURRENT = "CURRENT",

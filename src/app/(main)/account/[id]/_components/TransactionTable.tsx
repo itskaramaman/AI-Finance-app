@@ -49,12 +49,13 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import useFetch from "@/hooks/useFetch";
 import { bulkDeleteTransactions } from "@/actions/transaction";
 import { toast } from "sonner";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type SortConfig = {
   field: "date" | "category" | "amount";
@@ -77,6 +78,7 @@ const TransactionTable = ({
   const [typeFilter, setTypeFilter] = useState("");
   const [recurringFilter, setRecurringFilter] = useState("");
   const [pageNum, setPageNum] = useState(1);
+  const router = useRouter();
 
   const filteredAndSortedTransactions: TransactionType[] = useMemo(() => {
     let result = [...transactions];
@@ -382,7 +384,13 @@ const TransactionTable = ({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={`/transaction/create?edit=${transaction.id}`}
+                          >
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive"
                           onClick={() => handleBulkDelete([transaction.id])}

@@ -17,12 +17,10 @@ export type AccountFormType = z.infer<typeof accountFormSchema>;
 export const addTransactionFormSchema = z.object({
   type: z.nativeEnum(TransactionTypeEnum),
   amount: z.number().min(1, "Amount is required"),
-  account: z.string().min(1, "Account is required"),
+  accountId: z.string().min(1, "Account is required"),
   category: z.string().min(1, "Account is required"),
   date: z.date(),
   description: z.string().optional(),
   isRecurring: z.boolean().optional().default(false),
-  recurringInterval: z.nativeEnum(RecurringIntervalEnum).optional(),
+  recurringInterval: z.nativeEnum(RecurringIntervalEnum).nullable().optional(),
 });
-
-export type AddTransactionFormType = z.infer<typeof addTransactionFormSchema>;

@@ -276,8 +276,6 @@ export async function updateTransaction(
       }
     }
 
-    console.log(newBalance, transaction.account.balance);
-
     const updatedTransaction = await db.$transaction(async (tx) => {
       const updated = await tx.transaction.update({
         where: { id: id, userId: user.id },

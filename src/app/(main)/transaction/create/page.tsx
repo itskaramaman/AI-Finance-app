@@ -1,4 +1,3 @@
-export const dynamic = "force-dynamic";
 import { getUserAccounts } from "@/actions/account";
 import AddTransactionForm from "../_components/AddTransactionForm";
 import { getTransactionById } from "@/actions/transaction";

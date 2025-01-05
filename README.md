@@ -38,7 +38,7 @@ To get started with the app, clone the repository and follow these steps:
 2. Install the dependencies:
 
    ```
-   npm install
+   npm install --legacy-peer-deps
    ```
 
 3. Set up the environment variables:

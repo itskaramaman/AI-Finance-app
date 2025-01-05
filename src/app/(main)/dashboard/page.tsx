@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = "auto";
 
 import CreateAccountDrawer from "@/components/CreateAccountDrawer";
 import { Card } from "@/components/ui/card";

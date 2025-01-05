@@ -1,6 +1,5 @@
 import {
   Body,
-  Button,
   Heading,
   Container,
   Head,
@@ -14,7 +13,7 @@ import * as React from "react";
 type EmailProps = {
   username: string;
   type: "budget-alert" | "monthly-report";
-  data: Record<string, string | number>;
+  data: Record<string, number>;
 };
 
 export default function Email({
@@ -83,7 +82,7 @@ const styles = {
     color: "#1f2937",
     fontSize: "32px",
     fontWeight: "bold",
-    textAlign: "center",
+    textAlign: "center" as const,
     margin: "0 0 20px",
   },
   heading: {

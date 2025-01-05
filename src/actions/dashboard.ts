@@ -51,13 +51,36 @@ export async function createAccount(accountData: CreateAccountDataType) {
       },
     });
 
-    console.log(account);
     const serializedAccount = serializeObject(account);
-
     revalidatePath("/dashboard");
-    console.log(serializedAccount);
+
     return { success: true, data: serializedAccount };
   } catch (error) {
-    throw new Error(error.message);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error while creating account");
+  }
+}
+
+export async function getDashboardData() {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+    if (!user) throw new Error("User not found");
+
+    const transactions = await db.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+    });
+
+    return transactions.map((transaction) => serializeObject(transaction));
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error while getting Dashboard Data");
   }
 }

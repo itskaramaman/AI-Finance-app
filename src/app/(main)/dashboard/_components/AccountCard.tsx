@@ -29,13 +29,14 @@ type AccountCardProps = {
 
 const AccountCard = ({ account }: { account: AccountCardProps }) => {
   const {
-    error,
     loading,
     data,
     fn: fnUpdateDefaultAccount,
   } = useFetch(updateDefaultAccount);
 
-  const handleDefaultAccountChange = async (e) => {
+  const handleDefaultAccountChange = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     e.preventDefault();
     if (account.isDefault) {
       toast.warning("You need atleast one default account");

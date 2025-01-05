@@ -18,11 +18,11 @@ export async function sendEmail({ to, subject, react }: SendEmail) {
       react,
     });
 
-    console.log(data);
-
     return { success: true, data };
   } catch (error) {
-    console.error(error);
-    return { success: false, error: error.message };
+    if (error instanceof Error) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Error while sending email." };
   }
 }

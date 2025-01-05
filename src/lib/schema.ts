@@ -24,3 +24,5 @@ export const addTransactionFormSchema = z.object({
   isRecurring: z.boolean().optional().default(false),
   recurringInterval: z.nativeEnum(RecurringIntervalEnum).nullable().optional(),
 });
+
+export type AddTransactionFormType = z.infer<typeof addTransactionFormSchema>;

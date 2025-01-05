@@ -93,6 +93,9 @@ export async function getAccountDetailsById(accountId: string) {
     );
     return { account: serializedAccount, transactions: serializedTransactions };
   } catch (error) {
+    if(error instanceof Error) {
+      throw new Error(error.message)
+    }
     console.log(error);
     return null;
   }

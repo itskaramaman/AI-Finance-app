@@ -46,8 +46,10 @@ export async function getCurrentBudget(accountId: string) {
         : 0,
     };
   } catch (error) {
-    console.log(error);
-    throw new Error(error);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error while getting current budget");
   }
 }
 
@@ -72,6 +74,9 @@ export async function updateBudget(amount: number) {
       budget: { ...budget, amount: budget.amount.toNumber() },
     };
   } catch (error) {
-    throw new Error(error);
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error("Error while updating budget");
   }
 }

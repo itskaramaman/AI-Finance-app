@@ -51,7 +51,8 @@ const AccountChart = ({
     }));
 
     transactionCharts = transactionCharts.sort(
-      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
 
     switch (chartDuration) {
@@ -103,7 +104,12 @@ const AccountChart = ({
         </div>
 
         <div>
-          <Select defaultValue={chartDuration} onValueChange={setChartDuration}>
+          <Select
+            defaultValue={chartDuration}
+            onValueChange={(value: ChartDurationType) =>
+              setChartDuration(value)
+            }
+          >
             <SelectTrigger value="light" className="w-[180px]">
               <SelectValue placeholder="Last Month" />
             </SelectTrigger>

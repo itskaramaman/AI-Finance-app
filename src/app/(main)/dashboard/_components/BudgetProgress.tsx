@@ -33,9 +33,6 @@ const BudgetProgress = ({ budget, currentExpenses }: BudgetProgressType) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newBudget, setNewBudget] = useState(budget?.amount.toString() || "");
 
-  console.log(budget);
-  console.log(currentExpenses);
-
   const percentageUsed = useMemo(() => {
     return budget?.amount ? (currentExpenses / budget?.amount) * 100 : 0;
   }, [budget?.amount, currentExpenses]);
@@ -120,8 +117,8 @@ const BudgetProgress = ({ budget, currentExpenses }: BudgetProgressType) => {
                 percentageUsed >= 90
                   ? "bg-red-500"
                   : percentageUsed > 75
-                  ? "bg-yellow-500"
-                  : "bg-green-500"
+                    ? "bg-yellow-500"
+                    : "bg-green-500"
               }
             />
             <p className="text-xs text-muted-foreground text-right">

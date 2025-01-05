@@ -99,7 +99,6 @@ const AddTransactionForm = ({
 
   const {
     loading: updateTransactionLoading,
-    error: updateTransactionError,
     data: updateTransactionData,
     fn: fnUpdateTransaction,
   } = useFetch(updateTransaction);

@@ -106,7 +106,7 @@ const TransactionTable = ({
 
       switch (sortConfig.field) {
         case "date":
-          comparison = new Date(a.date) - new Date(b.date);
+          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
           break;
         case "amount":
           comparison = a.amount - b.amount;

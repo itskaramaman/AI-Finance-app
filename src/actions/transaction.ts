@@ -168,7 +168,7 @@ function calculateNextRecurringDate(
 
 export async function scanReceipt(file: File) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
     // Convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
@@ -197,6 +197,8 @@ export async function scanReceipt(file: File) {
       { inlineData: { data: base64String, mimeType: file.type } },
       prompt,
     ]);
+
+    console.log(result);
 
     const response = await result.response;
     const text = response.text();
